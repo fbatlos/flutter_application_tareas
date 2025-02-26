@@ -35,11 +35,12 @@ class ApiService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      return null;
+      final errorBody = jsonDecode(response.body);
+      return errorBody["message"];
     }
   }
 
-  static Future<List<dynamic>?> postTareas(
+  static Future<dynamic?> postTareas(
       String token, TareaInsertDTO tareainsertada) async {
     final url = Uri.parse("$baseUrl/tareas/tarea");
     final response = await http.post(
@@ -51,14 +52,16 @@ class ApiService {
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       return jsonDecode(response.body);
     } else {
-      return null;
+      final errorBody = jsonDecode(response.body);
+      print(errorBody);
+      return errorBody["message"];
     }
   }
 
-  static Future<Bool?> deleteTareas(String token, String idTarea) async {
+  static Future<dynamic?> deleteTareas(String token, String idTarea) async {
     final url = Uri.parse("$baseUrl/tareas/tarea/$idTarea");
     final response = await http.delete(
       url,
@@ -68,10 +71,11 @@ class ApiService {
       },
     );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
+    if (response.statusCode == 204) {
       return null;
+    } else {
+      final errorBody = jsonDecode(response.body);
+      return errorBody["message"];
     }
   }
 
@@ -86,10 +90,10 @@ class ApiService {
         body: jsonEncode(tareaUpdate));
 
     if (response.statusCode == 200) {
-      print(response.body);
       return jsonDecode(response.body);
     } else {
-      return null;
+      final errorBody = jsonDecode(response.body);
+      return errorBody["message"];
     }
   }
 }

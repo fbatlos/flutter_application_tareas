@@ -27,23 +27,26 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   String? _token;
   String? _errorMessage;
+  bool _isLoading = false;
 
   // Login funcional
   void login() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     String username = usernameController.text;
     String password = passwordController.text;
 
-    // Llamada al login y obtención del token
     String? token = await ApiService.login(username, password);
 
     setState(() {
+      _isLoading = false;
       if (token != null) {
         _token = token;
-        _errorMessage =
-            null; // Si el login es exitoso, quitamos el mensaje de error
         print("Login exitoso: $_token");
-        // Después de obtener el token, navego a la pantalla de tareas
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => TareasListScreen(
@@ -53,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       } else {
-        _errorMessage = "Usuario o contraseña incorrectos"; // Mostramos error
+        _errorMessage = "Usuario o contraseña incorrectos";
       }
     });
   }
@@ -77,19 +80,18 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
             ),
             SizedBox(height: 10),
-
-            // Mostrar mensaje de error si existe
             if (_errorMessage != null)
               Text(
                 _errorMessage!,
                 style: TextStyle(color: Colors.red, fontSize: 14),
               ),
-
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: login,
-              child: Text("Iniciar sesión"),
-            ),
+            _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: login,
+                    child: Text("Iniciar sesión"),
+                  ),
           ],
         ),
       ),

@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  jwt_decoder: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -16,6 +17,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   http: ^0.13.6
   intl: ^0.17.0
+
 
 flutter:
   uses-material-design: true

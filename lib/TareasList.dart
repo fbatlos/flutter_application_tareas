@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_tareas/Model/TareaInsertDTO.dart';
 import 'API/api_service.dart';
 import 'Model/Tarea.dart';
+import 'Utils/Utils.dart';
 import 'package:intl/intl.dart';
 
 class TareasListScreen extends StatefulWidget {
@@ -18,10 +19,12 @@ class _TareasListScreenState extends State<TareasListScreen> {
   List<dynamic> _tareas = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _esAdmin = false;
 
   @override
   void initState() {
     super.initState();
+    verificarAdmin();
     obtenerTareas();
   }
 
@@ -46,10 +49,25 @@ class _TareasListScreenState extends State<TareasListScreen> {
     }
   }
 
+  Future<void> verificarAdmin() async {
+    bool admin = await esAdmin(widget.token);
+    setState(() {
+      _esAdmin = admin;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Tareas")),
+      appBar: AppBar(
+        title: Text("Tareas"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: _isLoading
@@ -66,9 +84,9 @@ class _TareasListScreenState extends State<TareasListScreen> {
                           var tarea = _tareas[index];
                           return ListTile(
                             title: Text(tarea["titulo"]),
-                            subtitle: Text(DateFormat('dd/MM/yyyy - HH:mm')
-                                .format(DateTime.parse(tarea["fecha_pub"]))
-                                .toString()),
+                            subtitle: Text(
+                              "${DateFormat('dd/MM/yyyy - HH:mm').format(DateTime.parse(tarea["fecha_pub"]))}${_esAdmin ? " - ${tarea["username"]}" : ""}",
+                            ),
                             trailing: IconButton(
                               icon: Icon(
                                 tarea["completada"] ? Icons.check : Icons.clear,
@@ -99,16 +117,36 @@ class _TareasListScreenState extends State<TareasListScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          _showAddTareaDialog(context, widget.token, widget.username, () async {
+          _addTareaDialog(context, widget.token, widget.username, () async {
             setState(() {
               _isLoading = true;
             });
             await obtenerTareas();
-          });
+          }, _esAdmin);
         },
       ),
     );
   }
+}
+
+void _mostrarAlertaError(BuildContext context, String mensaje) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Error"),
+        content: Text(mensaje, style: TextStyle(color: Colors.red)),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("OK"),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 void _opcionesTarea(BuildContext context, String token, dynamic tarea,
@@ -137,16 +175,16 @@ void _opcionesTarea(BuildContext context, String token, dynamic tarea,
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Editar"),
-          ),
-          TextButton(
             onPressed: () async {
-              await ApiService.deleteTareas(token, tarea["_id"]);
+              var resultado =
+                  await ApiService.deleteTareas(token, tarea["_id"]);
               Navigator.of(context).pop();
-              actualizarLista();
+
+              if (resultado is String) {
+                _mostrarAlertaError(context, resultado);
+              } else {
+                actualizarLista();
+              }
             },
             child: Text("Eliminar", style: TextStyle(color: Colors.red)),
           ),
@@ -156,10 +194,12 @@ void _opcionesTarea(BuildContext context, String token, dynamic tarea,
   );
 }
 
-void _showAddTareaDialog(BuildContext context, String token, String username,
-    Function actualizarLista) {
+void _addTareaDialog(BuildContext context, String token, String username,
+    Function actualizarLista, bool esAdmin) {
   final TextEditingController tituloController = TextEditingController();
   final TextEditingController cuerpoController = TextEditingController();
+  final TextEditingController usernameController =
+      TextEditingController(text: username);
 
   showDialog(
     context: context,
@@ -177,6 +217,11 @@ void _showAddTareaDialog(BuildContext context, String token, String username,
               controller: cuerpoController,
               decoration: InputDecoration(labelText: "Cuerpo"),
             ),
+            if (esAdmin)
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(labelText: "Username"),
+              ),
           ],
         ),
         actions: [
@@ -190,12 +235,24 @@ void _showAddTareaDialog(BuildContext context, String token, String username,
             onPressed: () async {
               String titulo = tituloController.text;
               String cuerpo = cuerpoController.text;
-              await ApiService.postTareas(
-                  token,
-                  TareaInsertDTO(
-                      titulo: titulo, cuerpo: cuerpo, username: username));
+              String usuarioAsignado = usernameController.text;
+
+              var resultado = await ApiService.postTareas(
+                token,
+                TareaInsertDTO(
+                  titulo: titulo,
+                  cuerpo: cuerpo,
+                  username: usuarioAsignado,
+                ),
+              );
+
               Navigator.of(context).pop();
-              actualizarLista();
+
+              if (resultado is String) {
+                _mostrarAlertaError(context, resultado);
+              } else {
+                actualizarLista();
+              }
             },
             child: Text("Guardar"),
           ),
