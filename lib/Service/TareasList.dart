@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_tareas/Model/TareaInsertDTO.dart';
-import 'API/api_service.dart';
-import 'Model/Tarea.dart';
-import 'Utils/Utils.dart';
+import '../API/api_service.dart';
+import '../Model/Tarea.dart';
+import '../Utils/Utils.dart';
 import 'package:intl/intl.dart';
 
 class TareasListScreen extends StatefulWidget {
