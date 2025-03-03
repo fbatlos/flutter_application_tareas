@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'package:flutter_application_tareas/Model/Tarea.dart';
 import 'package:flutter_application_tareas/Model/TareaInsertDTO.dart';
+import 'package:flutter_application_tareas/Model/UsuarioRegisterDTO.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 
@@ -19,6 +20,23 @@ class ApiService {
       return data["token"];
     } else {
       return null;
+    }
+  }
+
+  static Future<dynamic?> register(UsuarioRegisterDTO usuarioRegistrado) async {
+    final url = Uri.parse("$baseUrl/usuarios/register");
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(usuarioRegistrado.toJson()),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return data;
+    } else {
+      final errorBody = jsonDecode(response.body);
+      return errorBody["message"];
     }
   }
 

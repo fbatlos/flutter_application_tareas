@@ -31,7 +31,6 @@ class _TareasListScreenState extends State<TareasListScreen> {
   Future<void> obtenerTareas() async {
     try {
       var tareas = await ApiService.getTareas(widget.token);
-      print(tareas);
 
       if (tareas == null) {
         throw Error();
@@ -43,7 +42,7 @@ class _TareasListScreenState extends State<TareasListScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = "No hay tareas.";
+        _errorMessage = "No hay tareas disponibles.";
         _isLoading = false;
       });
     }
@@ -59,10 +58,18 @@ class _TareasListScreenState extends State<TareasListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
-        title: Text("Tareas"),
+        title: Text(
+          "Tareas",
+          style: TextStyle(color: Color.fromARGB(255, 248, 248, 248)),
+        ),
+        backgroundColor: Colors.blueGrey[900],
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Color.fromARGB(255, 248, 248, 248),
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -74,48 +81,79 @@ class _TareasListScreenState extends State<TareasListScreen> {
             ? Center(child: CircularProgressIndicator())
             : _errorMessage != null
                 ? Center(
-                    child: Text(_errorMessage!,
-                        style: TextStyle(color: Colors.red)))
+                    child: Text(
+                      _errorMessage!,
+                      style: TextStyle(color: Colors.red, fontSize: 18),
+                    ),
+                  )
                 : _tareas.isEmpty
-                    ? Center(child: Text("No hay tareas disponibles"))
+                    ? Center(
+                        child: Text(
+                          "No hay tareas disponibles",
+                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: _tareas.length,
                         itemBuilder: (context, index) {
                           var tarea = _tareas[index];
-                          return ListTile(
-                            title: Text(tarea["titulo"]),
-                            subtitle: Text(
-                              "${DateFormat('dd/MM/yyyy - HH:mm').format(DateTime.parse(tarea["fecha_pub"]))}${_esAdmin ? " - ${tarea["username"]}" : ""}",
+                          return Card(
+                            elevation: 4,
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                tarea["completada"] ? Icons.check : Icons.clear,
-                                color: tarea["completada"]
-                                    ? Colors.green
-                                    : Colors.red,
+                            color: tarea["completada"]
+                                ? Colors.green[300]
+                                : Colors.blueGrey[700],
+                            child: ListTile(
+                              contentPadding: EdgeInsets.all(16),
+                              title: Text(
+                                tarea["titulo"],
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  tarea["completada"] = !tarea["completada"];
-                                  ApiService.putTareas(widget.token, tarea);
-                                });
+                              subtitle: Text(
+                                "${DateFormat('dd/MM/yyyy - HH:mm').format(DateTime.parse(tarea["fecha_pub"]))}${_esAdmin ? " - ${tarea["username"]}" : ""}",
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  tarea["completada"]
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: tarea["completada"]
+                                      ? Colors.greenAccent
+                                      : Colors.white,
+                                  size: 28,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    tarea["completada"] = !tarea["completada"];
+                                    ApiService.putTareas(widget.token, tarea);
+                                  });
+                                },
+                              ),
+                              onLongPress: () => {
+                                _opcionesTarea(context, widget.token, tarea,
+                                    () async {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  await obtenerTareas();
+                                })
                               },
                             ),
-                            onLongPress: () => {
-                              _opcionesTarea(context, widget.token, tarea,
-                                  () async {
-                                setState(() {
-                                  _isLoading = true;
-                                });
-                                await obtenerTareas();
-                              })
-                            },
                           );
                         },
                       ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        backgroundColor: Colors.blueGrey[700],
+        child: Icon(Icons.add, color: Colors.white),
         onPressed: () {
           _addTareaDialog(context, widget.token, widget.username, () async {
             setState(() {

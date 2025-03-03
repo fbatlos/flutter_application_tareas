@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_tareas/Service/Register.dart';
 import '../API/api_service.dart';
 import '../Service/TareasList.dart';
 
@@ -8,14 +9,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  //Preguntar si esta bien implementado
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  String? _token;
   String? _errorMessage;
   bool _isLoading = false;
 
-  // Login funcional
+  // Login funcional con validación
   void login() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -29,13 +33,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = false;
       if (token != null) {
-        _token = token;
-        print("Login exitoso: $_token");
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => TareasListScreen(
-              token: _token!,
+              token: token,
               username: username,
             ),
           ),
@@ -49,35 +51,106 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(labelText: "Usuario"),
+      backgroundColor: const Color.fromARGB(255, 38, 50, 56),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: "Contraseña"),
-              obscureText: true,
-            ),
-            SizedBox(height: 10),
-            if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Colors.red, fontSize: 14),
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Iniciar Sesión",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 38, 50, 56),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: usernameController,
+                      decoration: InputDecoration(
+                        labelText: "Usuario",
+                        prefixIcon: Icon(Icons.person),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      validator: (value) =>
+                          value!.isEmpty ? "El usuario es obligatorio" : null,
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        labelText: "Contraseña",
+                        prefixIcon: Icon(Icons.lock),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      obscureText: true,
+                      validator: (value) =>
+                          value!.length < 5 ? "Mínimo 5 caracteres" : null,
+                    ),
+                    SizedBox(height: 10),
+                    if (_errorMessage != null)
+                      Text(
+                        _errorMessage!,
+                        style: TextStyle(color: Colors.red, fontSize: 14),
+                      ),
+                    SizedBox(height: 20),
+                    _isLoading
+                        ? CircularProgressIndicator()
+                        : ElevatedButton(
+                            onPressed: login,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              backgroundColor: Colors.blueGrey[800],
+                            ),
+                            child: Text(
+                              "Iniciar sesión",
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color:
+                                      const Color.fromARGB(255, 255, 255, 255)),
+                            ),
+                          ),
+                    SizedBox(height: 20),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegisterScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Registrarse",
+                        style: TextStyle(
+                          color: Colors.blueGrey[700],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            SizedBox(height: 20),
-            _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: login,
-                    child: Text("Iniciar sesión"),
-                  ),
-          ],
+            ),
+          ),
         ),
       ),
     );
