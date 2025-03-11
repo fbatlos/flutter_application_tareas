@@ -1,5 +1,7 @@
 import 'package:flutter_application_tareas/Model/Direccion.dart';
 
+//Los DTO son para que puedas ingresar datos sin necesidad de que tenga todos los campos,  son simples data class con los diferentes campos
+
 class UsuarioRegisterDTO {
   final String username;
   final String email;
@@ -14,7 +16,7 @@ class UsuarioRegisterDTO {
     required this.passwordRepeat,
     required this.direccion,
   });
-
+//Es necesario pasarlo a formato json para enviarlo en la API
   factory UsuarioRegisterDTO.fromJson(Map<String, dynamic> json) {
     return UsuarioRegisterDTO(
       username: json["username"],

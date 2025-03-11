@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Login funcional con validación
   void login() async {
+    //Es una doble validación propia de Flutter la cual es usada para mostrar los errores de campos obligatorios.
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -29,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String password = passwordController.text;
 
     String? token = await ApiService.login(username, password);
-
+    //Cambiamos el estado para que se repinte sin ningún problema
     setState(() {
       _isLoading = false;
       if (token != null) {
@@ -48,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+//Creación del apartado visual con sus comprobaciones y su distinción de admin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Form(
+                //Le asignamos una key la cual usaremas para realizar una doble verificación
                 key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -129,6 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                     SizedBox(height: 20),
+                    //Text button para dirigirnos a la ventana del register
                     TextButton(
                       onPressed: () {
                         Navigator.push(

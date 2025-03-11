@@ -6,12 +6,16 @@ import 'package:flutter_application_tareas/Model/UsuarioRegisterDTO.dart';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 
+//API service todos los enpoinst que al que puedes acceder
 class ApiService {
+  //Para todos es necesario mencionarle la URL, y una respuesta asincrona con cada tipo de petición
   static Future<String?> login(String username, String password) async {
     final url = Uri.parse("$baseUrl/usuarios/login");
     final response = await http.post(
       url,
+      //En la cabecera le añadimos el formato que le vamos a pasar.
       headers: {"Content-Type": "application/json"},
+      //El cuerpo que vamos a enviarle a la api
       body: jsonEncode({"username": username, "password": password}),
     );
 
