@@ -8,6 +8,8 @@ import 'config.dart';
 
 //API service todos los enpoinst que al que puedes acceder
 class ApiService {
+  //Este comentario es el mismo en todos lo demas
+
   //Para todos es necesario mencionarle la URL, y una respuesta asincrona con cada tipo de petición
   static Future<String?> login(String username, String password) async {
     final url = Uri.parse("$baseUrl/usuarios/login");
